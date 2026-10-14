@@ -16,7 +16,9 @@
 .mobileHint{display:none;background:#f3f8f9;color:#527881;font-size:10px;font-weight:700;padding:9px 14px}
 @media(max-width:660px){.mobileHint{display:block}}
 
- .priceConfirm{display:flex;align-items:flex-start;gap:12px;margin-top:16px;padding:13px;border:1px solid #dce6ed;border-radius:10px;background:#f7fafb;color:#315368;cursor:pointer}.priceConfirm input{width:17px;height:17px;flex:none;accent-color:var(--accent);margin-top:2px}.priceConfirm strong{display:block;font-size:12px}.priceConfirm small{display:block;color:#718596;font-size:11px;line-height:1.5;margin-top:3px}
+#stringTechSection{display:none}
+body.advanced-mode #stringTechSection{display:block}
+@media print{body.advanced-mode #stringTechSection{display:block}}
 </style>
 </head>
 <body>
@@ -30,27 +32,28 @@
   <section class="topStats" aria-label="Indicadores principales">
     <div class="stat"><div class="statLabel">Consumo respaldado <span class="bubble">⚡</span></div><div class="statValue"><span id="statDemand">—</span> <small>kWh/día</small></div><div class="statHelp">Solo circuitos incluidos en el sistema</div></div>
     <div class="stat"><div class="statLabel">Potencial FV teórico <span class="bubble">☀</span></div><div class="statValue"><span id="statSolar">—</span> <small>kWh/día</small></div><div class="statHelp">Potencial diario simplificado; no garantiza entrega</div></div>
-    <div class="stat"><div class="statLabel">Energía útil en batería <span class="bubble">▣</span></div><div class="statValue"><span id="statBattery">—</span> <small>kWh CA</small></div><div class="statHelp">Cota energética: requiere BMS e inversor adecuados</div></div>
-    <div class="stat"><div class="statLabel">Autonomía nocturna <span class="bubble">◷</span></div><div class="statValue"><span id="statRuntime">—</span> <small>horas</small></div><div class="statHelp">Se muestra solo con corriente de BMS ingresada y potencia estimada suficiente</div></div>
+    <div class="stat"><div class="statLabel">Energía útil en batería <span class="bubble">▣</span></div><div class="statValue"><span id="statBattery">—</span> <small>kWh CA</small></div><div class="statHelp">Después de DoD y conversión</div></div>
+    <div class="stat"><div class="statLabel">Autonomía nocturna <span class="bubble">◷</span></div><div class="statValue"><span id="statRuntime">—</span> <small>horas</small></div><div class="statHelp">Horas equivalentes al perfil, no garantía</div></div>
   </section>
   <div class="layout">
     <div class="mainCol">
       <section class="panel" id="escenarios"><div class="panelPad"><div class="sectionLabel">Tu punto de partida</div><div class="panelHead" style="margin-bottom:12px"><div><h2>Selecciona un escenario</h2><p>Puedes modificar cualquier dato sin restricciones.</p></div><button class="btn sm" id="resetBtn" type="button">↺ Restablecer</button></div><div class="scenario" id="presets"><button type="button" data-preset="proyecto" class="active">Mi proyecto · 2 aires</button><button type="button" data-preset="basico">Respaldo básico</button><button type="button" data-preset="casa">Casa completa</button><button type="button" data-preset="vacio">Desde cero</button></div><p class="miniInfo" id="scenarioNote">Proyecto de ejemplo: dos aires inverter durante 9 h nocturnas; nevera y otros equipos conectados a ENEE. Potencias ilustrativas, editables según mediciones.</p></div></section>
+      <section class="panel" aria-label="Nivel de análisis"><div class="panelPad"><div class="flexRow"><div><h2 style="font-size:16px;margin:0">Nivel de análisis</h2><p class="fine" style="margin:5px 0 0">El cálculo básico siempre está disponible. Activa el análisis avanzado para revisar cadenas fotovoltaicas y límites eléctricos.</p></div><button class="btn sm primary" type="button" id="advancedModeBtn" aria-pressed="false" aria-controls="stringTechSection">Activar análisis avanzado</button></div></div></section>
       <section id="equipos" class="panel"><div class="panelPad"><div class="panelHead"><div><h2><span class="num">01</span> Equipos y consumo</h2><p>Potencia promedio para energía y máxima para inversor; las ventanas día y noche se evalúan por separado.</p></div><span class="pill">Editable</span></div></div><div class="mobileHint">← Desliza la tabla para editar todas las columnas →</div><div class="tableScroll"><table class="loads"><thead><tr><th style="width:25%">Equipo</th><th>Unid.</th><th>Prom. W</th><th>Máx. W</th><th>h día</th><th>h noche</th><th>Solar</th><th></th></tr></thead><tbody id="loadsBody"></tbody></table></div><div class="tableFoot"><button id="addLoad" class="btn sm primary" type="button">＋ Agregar equipo</button><span class="fine">Desmarca «Solar» para excluir un equipo que alimentará la ENEE.</span></div><div class="panelPad" style="padding-top:0"><div class="liveCalculation"><div><small>Carga de día</small><strong id="dayEnergy">—</strong></div><div><small>Carga nocturna</small><strong id="nightEnergy">—</strong></div><div><small>Otros equipos / ENEE</small><strong id="gridEnergy">—</strong></div><div><small>Potencia de diseño base</small><strong id="peakLoad">—</strong></div></div><p class="fine">Los watts «Prom.» corresponden al consumo medio mientras el equipo funciona. Los watts «Máx.» representan la demanda simultánea usada para dimensionamiento; no equivalen automáticamente al pico de arranque. Se suman las potencias máximas por separado para día y noche; se toma la mayor de ambas. No se incluyen arranques de motor ni límites de cada fase.</p></div></section>
       <section id="solar" class="panel"><div class="panelPad"><div class="panelHead"><div><h2><span class="num">02</span> Paneles y recurso solar</h2><p>La producción depende de la irradiación, temperatura, sombreado y pérdidas.</p></div></div><div class="fieldGrid" id="solarFields">
         <div class="field"><label for="panelCount">Cantidad de paneles</label><div class="unitbox"><input type="number" id="panelCount" data-config="panelCount" min="0" max="10000" step="1"><span>uds.</span></div></div>
         <div class="field"><label for="panelW">Potencia por panel</label><div class="unitbox"><input type="number" id="panelW" data-config="panelW" min="1" max="2000" step="10"><span>W</span></div></div>
-        <div class="field"><label for="hsp">Horas solares pico</label><div class="unitbox"><input type="number" id="hsp" data-config="hsp" min="0" max="12" step="0.1"><span>h/día</span></div><div class="fieldHelp">Ajustar con datos del lugar</div></div>
-        <div class="field"><label for="performance">Factor rendimiento FV</label><div class="unitbox"><input type="number" id="performance" data-config="performance" min="0" max="100" step="1"><span>%</span></div><div class="fieldHelp">Ejemplo editable, 80 %</div></div>
+        <div class="field"><label for="hsp">Horas solares pico</label><div class="unitbox"><input type="number" id="hsp" data-config="hsp" min="0.1" max="12" step="0.1"><span>h/día</span></div><div class="fieldHelp">Ajustar con datos del lugar</div></div>
+        <div class="field"><label for="performance">Factor rendimiento FV</label><div class="unitbox"><input type="number" id="performance" data-config="performance" min="1" max="100" step="1"><span>%</span></div><div class="fieldHelp">Ejemplo editable, 80 %</div></div>
       </div><div class="liveCalculation"><div><small>Arreglo fotovoltaico</small><strong id="pvSize">—</strong></div><div><small>Paneles orientativos requeridos</small><strong id="pvRecommend">—</strong></div><div><small>Meta energética FV</small><strong id="pvTarget">—</strong></div></div><p class="fine">Potencial FV sin clipping = kWp × HSP × factor global FV→CA. Meta FV = consumo diurno + consumo nocturno / (eficiencia de carga × eficiencia de descarga). Los cálculos son promedios diarios: NO modelan horarios, clima, sombreado real ni recortes de inversor.</p>
-      <div class="subsection"><div class="flexRow"><h3 style="margin:0">Verificación preliminar de strings</h3><button class="toggleDetails" type="button" data-toggle="stringDetails" aria-expanded="false">Mostrar parámetros ▾</button></div><div class="detailBody" id="stringDetails"><p class="fine">No se proporcionan límites eléctricos del inversor ni Voc real del panel: ingrésalos según sus fichas técnicas antes de confiar en el diagnóstico. También deben verificarse Vmp y corriente de entrada, no evaluados aquí.</p><div class="fieldGrid">
+      <div class="subsection" id="stringTechSection"><div class="flexRow"><h3 style="margin:0">Verificación preliminar de strings</h3><button class="toggleDetails" type="button" data-toggle="stringDetails" aria-expanded="false">Mostrar parámetros ▾</button></div><div class="detailBody" id="stringDetails"><p class="fine">No se proporcionan límites eléctricos del inversor ni Voc real del panel: ingrésalos según sus fichas técnicas antes de confiar en el diagnóstico. También deben verificarse Vmp y corriente de entrada, no evaluados aquí. Si la ficha no especifica W/MPPT, deja ese campo vacío; no dividas la potencia FV total entre los MPPT.</p><div class="fieldGrid">
         <div class="field"><label for="series">Paneles en serie</label><div class="unitbox"><input type="number" id="series" data-string="series" min="0" max="100" step="1"><span>uds.</span></div></div>
         <div class="field"><label for="stringsCount">Número de cadenas</label><div class="unitbox"><input type="number" id="stringsCount" data-string="stringsCount" min="0" max="100" step="1"><span>str.</span></div></div>
         <div class="field"><label for="mpptCount">MPPT disponibles</label><div class="unitbox"><input type="number" id="mpptCount" data-string="mpptCount" min="0" max="100" step="1"><span>uds.</span></div></div>
         <div class="field"><label for="voc">Voc del panel (STC)</label><div class="unitbox"><input type="number" id="voc" data-string="voc" min="0" max="200" step="0.1"><span>V</span></div></div>
         <div class="field"><label for="coldMultiplier">Multiplicador Voc frío</label><div class="unitbox"><input type="number" id="coldMultiplier" data-string="coldMultiplier" min="1" max="2" step="0.01"><span>×</span></div></div>
         <div class="field"><label for="maxPVVoltage">Voltaje DC máximo</label><div class="unitbox"><input type="number" id="maxPVVoltage" data-string="maxPVVoltage" min="0" max="2000" step="1"><span>V</span></div></div>
-        <div class="field"><label for="maxMpptW">Potencia nominal admisible / MPPT</label><div class="unitbox"><input type="number" id="maxMpptW" data-string="maxMpptW" min="0" max="100000" step="100"><span>W</span></div></div>
+        <div class="field"><label for="maxMpptW">Límite de potencia por MPPT (opcional)</label><div class="unitbox"><input type="number" id="maxMpptW" data-string="maxMpptW" min="0" max="100000" step="100" placeholder="No especificado"><span>W</span></div></div>
       </div><div class="liveCalculation"><div><small>Paneles distribuidos</small><strong id="pvDistributed">—</strong></div><div><small>Voc estimado en frío</small><strong id="pvVoc">—</strong></div><div><small>Potencia por cadena</small><strong id="pvStringW">—</strong></div></div><div id="stringNotices" class="statusList" style="margin-top:12px"></div></div></div>
       </div></section>
       <section id="almacenamiento" class="panel"><div class="panelPad"><div class="panelHead"><div><h2><span class="num">03</span> Inversor y almacenamiento</h2><p>Evalúa capacidad energética, potencia de salida y restricciones de descarga.</p></div></div><div class="fieldGrid">
@@ -72,7 +75,7 @@
         <div class="field"><label for="freightUSD">Flete, aduana en USD</label><div class="unitbox"><input id="freightUSD" type="number" data-config="freightUSD" min="0" max="1000000" step="1"><span>USD</span></div></div>
         <div class="field"><label for="localHNL">Instalación y otros</label><div class="unitbox"><input id="localHNL" type="number" data-config="localHNL" min="0" max="100000000" step="1"><span>HNL</span></div></div>
         <div class="field"><label for="tariff">Tarifa energía evitada</label><div class="unitbox"><input id="tariff" type="number" data-config="tariff" min="0" max="1000" step="0.01"><span>L/kWh</span></div></div>
-      </div><label class="priceConfirm"><input id="costsConfirmed" type="checkbox" data-confirm-costs><span><strong>Confirmo que este presupuesto incluye todos los costos.</strong><small>Revisé transporte, aranceles/impuestos, instalación, protecciones y materiales; si alguno vale cero, es porque realmente no aplica. Solo así se habilita el plazo mínimo idealizado de retorno.</small></span></label><div class="comparison" style="margin-top:16px"><div class="compareBox"><small>Inversión estimada con datos ingresados</small><strong id="priceHNL">—</strong><small id="priceUSD">—</small></div><div class="compareBox"><small>Ahorro mensual: cota superior teórica</small><strong id="savingsHNL">—</strong><small id="payback">Retorno: —</small></div></div><p class="priceNote" style="margin-top:14px">Importante: importación, IVA, ISV, aranceles, transporte nacional, permisos y materiales solo se incluyen cuando los ingresas. El ahorro nocturno requiere ingresar la potencia continua de descarga permitida por el BMS; si no está verificada, la página no muestra un ahorro total ni plazo de retorno. Es un límite energético optimista, NO una predicción de factura ENEE: no modela generación horaria, sombreado real, cambios de tarifa, curtailment, ni impuestos y costos no introducidos. No es una cotización.</p></div></section>
+      </div><div class="comparison" style="margin-top:16px"><div class="compareBox"><small>Inversión estimada con datos ingresados</small><strong id="priceHNL">—</strong><small id="priceUSD">—</small></div><div class="compareBox"><small>Ahorro mensual: cota superior teórica</small><strong id="savingsHNL">—</strong><small id="payback">Retorno: —</small></div></div><p class="priceNote" style="margin-top:14px">Importante: importación, IVA, ISV, aranceles, transporte nacional, permisos y materiales solo se incluyen cuando los ingresas. El ahorro se limita al consumo diurno posible y a energía nocturna que realmente podría almacenar la batería, con pérdidas de recarga y descarga. Es un límite energético optimista, NO una predicción de factura ENEE: no modela generación horaria, sombreado real, cambios de tarifa, curtailment, ni impuestos y costos no introducidos. No es una cotización.</p></div></section>
     </div>
     <aside class="aside" aria-label="Resultados y diagnóstico">
       <section class="overview"><div class="sectionLabel">Diagnóstico del sistema</div><div class="overviewTitle">Tu configuración actual</div><h3 id="overviewTitle">—</h3>
@@ -92,7 +95,7 @@
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-/* SOLARPLAN PRO v4: estimaciones diarias bajo supuestos explícitos.
+/* SOLARPLAN PRO v3: estimaciones diarias bajo supuestos explícitos.
    No simula clima horario, despacho híbrido, arranques, MPPT completo ni BMS.
    Los resultados NO constituyen verificación/certificación de una instalación. */
 (function (root, factory) {
@@ -132,8 +135,8 @@
     const dayPeakKW = sum(l => l.backed && l.dayHours > 0 ? l.simultaneousKW : 0);
     const nightPeakKW = sum(l => l.backed && l.nightHours > 0 ? l.simultaneousKW : 0);
     const loadPeakKW = Math.max(dayPeakKW, nightPeakKW);
-    const hsp = clamp(c.hsp, 0, 12);
-    const performance = clamp(c.performance, 0, 100) / 100;
+    const hsp = clamp(c.hsp, 0.1, 12);
+    const performance = clamp(c.performance, 1, 100) / 100;
     const chargeEfficiency = clamp(c.chargeEfficiency, 50, 100) / 100;
     const inverterEfficiency = clamp(c.inverterEfficiency, 50, 100) / 100;
     const dod = clamp(c.dod, 1, 100) / 100;
@@ -147,10 +150,7 @@
     // Para almacenar electricidad nocturna, la energía FV debe atravesar carga y descarga.
     const storageRoundTrip = chargeEfficiency * inverterEfficiency;
     const solarTargetKwh = day + night / storageRoundTrip;
-    const expectedPanelYield = panelW / 1000 * hsp * performance;
-    // Con HSP 0 o rendimiento 0 no hay producción: nunca devolver Infinity paneles.
-    const recommendedPanels = demand === 0 ? 0 :
-      (expectedPanelYield > 0 ? Math.ceil(solarTargetKwh / expectedPanelYield) : null);
+    const recommendedPanels = demand > 0 ? Math.ceil(solarTargetKwh / (panelW / 1000 * hsp * performance)) : 0;
     const batteryKwh = clamp(c.batteryKwh, 0, 1000);
     const batteryUnits = Math.floor(clamp(c.batteryUnits, 0, 100));
     const batteryNominal = batteryKwh * batteryUnits;
@@ -169,27 +169,20 @@
     const batteryDischargeKW = batteryUnits > 0 && batteryKwh > 0 && batteryVoltage > 0 && batteryMaxCurrent > 0
       ? batteryUnits * batteryVoltage * batteryMaxCurrent * inverterEfficiency / 1000 : null;
     const effectiveInverterKW = batteryDischargeKW === null ? inverterKW : Math.min(inverterKW, batteryDischargeKW);
-    const hasUsableStorage = batteryUnits > 0 && batteryKwh > 0 && inverterKW > 0;
-    // false = no hay almacenamiento o la potencia comprobada es insuficiente;
-    // null = existe batería pero faltan sus datos de corriente/BMS.
-    const batteryPowerOK = nightPeakKW === 0 ? true :
-      (!hasUsableStorage ? false : (batteryDischargeKW === null ? null :
-        isEnough(batteryDischargeKW, nightPeakKW * (1 + reserveMargin))));
+    const batteryPowerOK = nightPeakKW === 0 ? true : (batteryDischargeKW === null ? null : isEnough(batteryDischargeKW, nightPeakKW * (1 + reserveMargin)));
     const inverterOK = isEnough(inverterKW, designLoadKW);
     // "Autonomía" es equivalente solo a la potencia media de la ventana nocturna.
     // Si no hay inversor o no alcanza potencia nocturna, no declarar horas de respaldo.
-    const runtimeHours = nightAverageKW > 0 && hasUsableStorage &&
-      inverterKW >= nightPeakKW * (1 + reserveMargin) && batteryPowerOK === true
-      ? batteryUsableAC / nightAverageKW : null;
+    const runtimeHours = nightAverageKW > 0 && inverterKW >= nightPeakKW * (1 + reserveMargin) &&
+      (batteryPowerOK === null || batteryPowerOK) ? batteryUsableAC / nightAverageKW : null;
     const pvRatio = inverterKW > 0 ? pvNomKW / inverterKW : null;
     // Cota superior de autoconsumo SIN EXPORTACIÓN: priorizar consumos del día y
     // después enviar excedente energético a batería con limitación de capacidad.
     // Nunca sumar kWh nocturnos sin batería o sin inversor.
     const directDayKwh = inverterKW > 0 ? Math.min(day, solarPotentialKwh) : 0;
     const excessAfterDay = Math.max(0, solarPotentialKwh - directDayKwh);
-    // No cuantificar ahorro nocturno cuando el BMS no tenga potencia verificada.
-    const fromBatteryKwh = hasUsableStorage && batteryPowerOK === true &&
-      inverterKW >= nightPeakKW * (1 + reserveMargin)
+    const fromBatteryKwh = inverterKW > 0 && batteryUnits > 0 && batteryKwh > 0 &&
+      (batteryPowerOK === null || batteryPowerOK) && nightPeakKW <= inverterKW
       ? Math.min(night, batteryUsableAC, excessAfterDay * storageRoundTrip) : 0;
     const potentialSelfUse = directDayKwh + fromBatteryKwh;
     const usedForCharging = fromBatteryKwh / storageRoundTrip;
@@ -202,18 +195,11 @@
     const localHNL = clamp(c.localHNL, 0, 100000000);
     const investmentUSD = inverterUSD + batteryUnitUSD * batteryUnits + panelUnitUSD * panelCount + freightUSD + localHNL / currency;
     // Los ceros en los componentes principales significan "precio no ingresado".
-    const componentPricesComplete = (inverterKW === 0 || inverterUSD > 0) &&
+    const pricingComplete = (inverterKW === 0 || inverterUSD > 0) &&
       (panelCount === 0 || panelUnitUSD > 0) &&
       (batteryUnits === 0 || batteryUnitUSD > 0);
-    // La persona confirma explícitamente costos de flete, impuestos e instalación.
-    // Un costo de 0 puede significar "no aplica", pero NO "dato comprobado" por defecto.
-    const pricingComplete = componentPricesComplete && c.costsConfirmed === true;
     const tariff = clamp(c.tariff, 0, 1000);
-    // No publicar ahorro nocturno ni retorno con potencia de descarga desconocida.
-    // Si hay consumos nocturnos, el respaldo debe estar efectivamente dimensionado.
-    const nightlyEnergyCovered = isEnough(batteryUsableAC, night * (1 + reserveMargin));
-    const savingsModelValid = inverterOK && (night === 0 ||
-      (hasUsableStorage && batteryPowerOK === true && nightlyEnergyCovered));
+    const savingsModelValid = inverterOK && (batteryPowerOK !== false);
     const maxMonthlySavingsHNL = savingsModelValid ? potentialSelfUse * 30 * tariff : null;
     // Inversión / ahorro (sin O&M, degradación, impuestos omitidos o financiación):
     // por usar una cota superior de ahorro, es un PLAZO MÍNIMO idealizado.
@@ -254,7 +240,6 @@
       runtimeHours, inverterKW, designLoadKW, recommendedInverterKW, batteryDischargeKW,
       effectiveInverterKW, pvRatio, directDayKwh, fromBatteryKwh, unusedSolarPotential,
       investmentUSD, investmentHNL: investmentUSD * currency, pricingComplete,
-      componentPricesComplete, costsConfirmed: c.costsConfirmed === true,
       maxMonthlySavingsHNL, savingsModelValid, paybackYears, potentialSelfUse,
       stringPanels, coldVoc, wattsPerString, stringsWarnings:stringWarnings,
       stringsVerified:false, stringsPartiallyChecked, conservativeMpptPowerW,
@@ -275,7 +260,7 @@
   const money = (n, currency = 'HNL') => new Intl.NumberFormat('es-HN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n);
   const escapeHtml = (v) => String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   const makeLoad = (id, name, quantity, averageW, peakW, dayHours, nightHours, backed) => ({ id, name, quantity, averageW, peakW, dayHours, nightHours, backed });
-  const common = () => ({ config: {panelCount:24,panelW:580,hsp:5,performance:80,inverterKW:16,batteryKwh:16,batteryUnits:1,dod:90,inverterEfficiency:92,chargeEfficiency:90,margin:10,batteryVoltage:51.2,batteryMaxCurrent:200,exchangeRate:27.02,panelUnitUSD:0,inverterUSD:0,batteryUnitUSD:0,freightUSD:0,localHNL:0,tariff:0,costsConfirmed:false}, strings:{series:8,stringsCount:3,mpptCount:0,voc:0,coldMultiplier:1.10,maxPVVoltage:0,maxMpptW:0} });
+  const common = () => ({ config: {panelCount:24,panelW:580,hsp:5,performance:80,inverterKW:16,batteryKwh:16,batteryUnits:1,dod:90,inverterEfficiency:92,chargeEfficiency:90,margin:10,batteryVoltage:51.2,batteryMaxCurrent:200,exchangeRate:27.02,panelUnitUSD:0,inverterUSD:0,batteryUnitUSD:0,freightUSD:0,localHNL:0,tariff:0}, strings:{series:8,stringsCount:3,mpptCount:0,voc:0,coldMultiplier:1.10,maxPVVoltage:0,maxMpptW:0} });
   function scenario(name) {
     const st = common(); st.preset = name;
     if (name === 'proyecto') {
@@ -298,7 +283,16 @@
     }
     return st;
   }
-  const storageKey = 'solarplan-pro-v3'; // mantener clave para conservar proyectos existentes
+  const advancedModeKey = 'solarplan-pro-advanced-mode';
+  function setAdvancedMode(enabled) {
+    document.body.classList.toggle('advanced-mode',enabled);
+    const btn=document.getElementById('advancedModeBtn');
+    if(btn){btn.setAttribute('aria-pressed',String(enabled));btn.textContent=enabled?'Usar calculadora básica':'Activar análisis avanzado';}
+    try { localStorage.setItem(advancedModeKey,enabled?'1':'0'); } catch(e){}
+  }
+  document.getElementById('advancedModeBtn').addEventListener('click',()=>setAdvancedMode(!document.body.classList.contains('advanced-mode')));
+  try {setAdvancedMode(localStorage.getItem(advancedModeKey)==='1');}catch(e){setAdvancedMode(false);}
+  const storageKey = 'solarplan-pro-v3';
   function readStorage(key=storageKey) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
   function validState(v) {
     if (!v || typeof v !== 'object' || !v.config || typeof v.config !== 'object' || !Array.isArray(v.loads) || !v.strings || typeof v.strings !== 'object') return false;
@@ -317,8 +311,7 @@
   }
   function populate() {
     configFields.forEach(k=>{ const el=$('#'+k); if(el)el.value=state.config[k] ?? 0; });
-    stringFields.forEach(k=>{ const el=$('#'+k); if(el)el.value=state.strings[k] ?? 0; });
-    $('#costsConfirmed').checked = state.config.costsConfirmed === true;
+    stringFields.forEach(k=>{ const el=$('#'+k); if(el)el.value=(k==='maxMpptW' && !state.strings[k])?'':(state.strings[k] ?? 0); });
     $('#scenarioNote').textContent = state.note || 'Proyecto personalizado. Los valores se actualizan al modificarlos.';
     $$('#presets [data-preset]').forEach(el=>el.classList.toggle('active',el.dataset.preset===state.preset));
     renderLoads();refresh();
@@ -349,22 +342,21 @@
     const r = SolarLogic.compute(state);
     setText('#statDemand',fmt(r.demand,2));setText('#statSolar',fmt(r.solarPotentialKwh));setText('#statBattery',fmt(r.batteryUsableAC,2));setText('#statRuntime',r.runtimeHours===null?'—':fmt(r.runtimeHours));
     setText('#dayEnergy',fmt(r.day,2)+' kWh');setText('#nightEnergy',fmt(r.night,2)+' kWh');setText('#gridEnergy',fmt(r.grid,2)+' kWh');setText('#peakLoad',fmt(r.loadPeakKW,2)+' kW');
-    setText('#pvSize',fmt(r.pvNomKW,2)+' kWp');setText('#pvRecommend',r.recommendedPanels===null?'No calculable':fmt(r.recommendedPanels,0)+' paneles');setText('#pvTarget',fmt(r.solarTargetKwh,1)+' kWh/día');
+    setText('#pvSize',fmt(r.pvNomKW,2)+' kWp');setText('#pvRecommend',fmt(r.recommendedPanels,0)+' paneles');setText('#pvTarget',fmt(r.solarTargetKwh,1)+' kWh/día');
     setText('#invRecommend',fmt(r.recommendedInverterKW,1)+' kW');setText('#batRecommend',fmt(r.batteryRecommendedKwh,2)+' kWh');
     setText('#dischargeLimit',r.batteryDischargeKW === null?'No definido':fmt(r.batteryDischargeKW,2)+' kW CA');
     setText('#pvDistributed',fmt(r.stringPanels,0)+' paneles');setText('#pvVoc',state.strings.voc>0?fmt(r.coldVoc,1)+' V':'Pendiente');setText('#pvStringW',fmt(r.wattsPerString,0)+' W');
     setText('#priceHNL',r.investmentUSD>0?money(r.investmentHNL)+(r.pricingComplete?'':' · parcial'):'Sin cotizar');setText('#priceUSD',r.investmentUSD>0?money(r.investmentUSD,'USD'):'Ingresa los precios cotizados');
-    setText('#savingsHNL',state.config.tariff <= 0 ? 'Sin tarifa' : r.maxMonthlySavingsHNL === null ? 'No estimable: batería, potencia o datos pendientes' : money(r.maxMonthlySavingsHNL));
-    setText('#payback',r.paybackYears !== null ? 'Plazo mínimo idealizado: '+fmt(r.paybackYears,1)+' años' : 'Plazo: requiere precios, costos confirmados, tarifa y potencia verificada');
+    setText('#savingsHNL',state.config.tariff <= 0 ? 'Sin tarifa' : r.maxMonthlySavingsHNL === null ? 'No estimable: potencia insuficiente' : money(r.maxMonthlySavingsHNL));
+    setText('#payback',r.paybackYears !== null ? 'Plazo mínimo idealizado: '+fmt(r.paybackYears,1)+' años' : 'Plazo: faltan precios, tarifa o capacidad válida');
     setText('#overviewTitle',`${r.panelCount} paneles · ${fmt(r.inverterKW,1)} kW`);
     compare(r.solarPotentialKwh,r.solarTargetKwh,'','#pvCompare','#pvBar');
     compare(r.batteryUsableAC,r.night*(1+r.reserveMargin),'','#batteryCompare','#batteryBar');
     compare(r.inverterKW,r.designLoadKW,'','#inverterCompare','#inverterBar');
     setText('#summaryNight',fmt(r.night,2)+' kWh');setText('#summaryExcess',fmt(r.unusedSolarPotential,1)+' kWh/día (máx.)');
-    setText('#recText',`${r.recommendedPanels===null?'Paneles sin dimensionar':r.recommendedPanels+' paneles'} · ${fmt(r.recommendedInverterKW,1)} kW · ${fmt(r.batteryRecommendedKwh,1)} kWh`);
+    setText('#recText',`${r.recommendedPanels} paneles · ${fmt(r.recommendedInverterKW,1)} kW · ${fmt(r.batteryRecommendedKwh,1)} kWh`);
     setText('#recDetail','Cantidades mínimas matemáticas estimadas; no equivalen a una recomendación comercial ni validan el fabricante.');
     const warnings = [];
-    if (r.recommendedPanels===null) warnings.push(['bad','Recurso solar nulo','Con HSP = 0 o rendimiento FV = 0 % no se puede calcular un número finito de paneles capaz de cubrir las cargas.']);
     if (r.demand === 0) warnings.push(['neutral','Sin cargas solares','Activa al menos un equipo en la columna «Solar».']);
     else {
       warnings.push(r.solarOK && r.inverterKW>0 ?['ok','Potencial FV teórico suficiente','El potencial FV agregado cubre la meta calculada. No garantiza producción por hora ni recarga: pueden existir sombras, recortes y límites MPPT.']:['bad','Generación útil no demostrada','Verifica inversor, HSP, pérdidas y cantidad de paneles. El balance FV diario por sí solo no garantiza suministro.']);
@@ -375,17 +367,13 @@
       if (r.unusedSolarPotential > r.solarTargetKwh * .6 && r.solarTargetKwh>0)warnings.push(['neutral','Alto potencial FV no asignado',`En el balance diario idealizado quedan hasta ${fmt(r.unusedSolarPotential,1)} kWh/día sin asignar a estas cargas; NO son kWh medidos ni desperdicio confirmado.`]);
       if (r.pvRatio !== null && r.pvRatio>1.25)warnings.push(['neutral','Relación FV/CA elevada',`Relación DC/AC ≈ ${fmt(r.pvRatio,2)}. Verifica potencia fotovoltaica máxima, MPPT y clipping en el inversor específico.`]);
     }
-    if (r.night>0 && (r.batteryUnits===0 || r.batteryKwh===0 || r.inverterKW===0)) warnings.push(['bad','Respaldo nocturno imposible','Sin batería utilizable e inversor, el sol de día no puede alimentar las cargas de noche.']);
-      if (r.night>0 && r.runtimeHours===null && r.batteryUnits>0 && r.batteryKwh>0 && r.inverterKW>0)
-        warnings.push([r.batteryPowerOK===null?'neutral':'bad','Autonomía no comprobada',
-          r.batteryPowerOK===null?'Falta el límite continuo de descarga del BMS: no corresponde mostrar horas de autonomía ni ahorro nocturno.':'La potencia del inversor o de la batería no alcanza la demanda nocturna con margen.']);
-      if (!r.pricingComplete) warnings.push(['neutral','Presupuesto sin confirmar','Revisa precios de equipos y confirma que incluye todos los cargos, como impuestos, protecciones, flete e instalación. El plazo de retorno se oculta.']);
+    if (r.night>0 && (r.batteryUnits===0 || r.inverterKW===0)) warnings.push(['bad','Respaldo nocturno imposible','Sin batería utilizable e inversor, el sol de día no puede alimentar las cargas de noche.']);
+      if (r.night>0 && r.runtimeHours===null && r.batteryUnits>0 && r.inverterKW>0) warnings.push(['bad','Autonomía no validable','El inversor o el límite de descarga de las baterías no permite respaldar la potencia máxima nocturna.']);
+      if (!r.pricingComplete) warnings.push(['neutral','Presupuesto incompleto','Los precios a cero de paneles, inversor o baterías NO representan un costo total cotizado. El plazo de retorno se oculta.']);
       if (state.config.tariff>0 && r.savingsModelValid) warnings.push(['neutral','Ahorro como límite teórico','Solo se estima un máximo energético diario; no se modela generación por hora, carga real, tarifas por bloque, pérdidas variables ni sustitución futura de batería.']);
-    if (r.panelCount > 0 && !r.stringsPartiallyChecked) warnings.push(['neutral','Strings FV: datos incompletos','No se han informado suficientes datos eléctricos del panel e inversor para revisar siquiera Voc en frío y potencia preliminar por MPPT.']);
-    if (r.stringsWarnings.length > 0) warnings.push(['bad','Revisar distribución FV','El análisis de cadenas detectó '+r.stringsWarnings.length+' advertencia(s). Abre «Verificación preliminar de strings».']);
     warnings.push(['neutral','Compatibilidad y protecciones sin verificar','Los cálculos no confirman compatibilidad CAN/BMS, operación aislada, balance 120/240 V, limitaciones por fase, corrientes MPPT ni protecciones.']);
     $('#notices').innerHTML=warnings.map(x=>notice(x[0],x[1],x[2])).join('');
-    setText('#alertCount',warnings.filter(x=>x[0]==='bad').length+' alertas · '+warnings.filter(x=>x[0]==='neutral').length+' pendientes');
+    setText('#alertCount',warnings.filter(x=>x[0]==='bad').length+' alertas');
     const stringWarnings = [...r.stringsWarnings];
     const stringNotes = stringWarnings.map(s=>notice(s.includes('más cadenas que MPPT') || s.includes('podrían conectarse') ? 'neutral' : 'bad', 'Revisar distribución',s));
     stringNotes.push(notice('neutral',r.stringsPartiallyChecked?'Validación exclusivamente parcial':'Faltan datos de fabricante',r.stringsPartiallyChecked?'NO APROBADO PARA INSTALAR: faltan Isc, Imp, Vmp (frío/calor), corriente total por MPPT, ventanas MPPT, compatibilidad de conectores y especificaciones de fabricante.':'Ingresa límites del fabricante; aunque no aparezcan errores, las cadenas NO se consideran eléctricamente verificadas.')); 
@@ -414,21 +402,21 @@
   $('#loadsBody').addEventListener('change',e=>{const t=e.target;if(t.dataset.field)updateLoad(t);if(t.dataset.field!=='name')renderLoads();});
   $('#loadsBody').addEventListener('click',e=>{const t=e.target.closest('[data-delete]');if(!t)return;state.loads=state.loads.filter(l=>l.id!==t.dataset.delete);state.preset='personalizado';renderLoads();refresh();showToast('Equipo eliminado');});
   $('#addLoad').addEventListener('click',()=>{const id='custom'+Date.now()+'_'+(++nextId);state.loads.push(makeLoad(id,'Equipo nuevo',1,100,150,2,0,true));state.preset='personalizado';renderLoads();refresh();const target=$(`input[data-id="${id}"][data-field="name"]`);if(target){target.focus();target.select();}});
-  $('#costsConfirmed').addEventListener('change',e=>{state.config.costsConfirmed=e.target.checked;state.preset='personalizado';refresh();});
   $$('[data-config],[data-string]').forEach(el=>{
     el.addEventListener('input',()=>{
+      if(el.value==='' && el.dataset.string==='maxMpptW'){state.strings.maxMpptW=0;state.preset='personalizado';refresh();return;}
       if(el.value===''||!Number.isFinite(Number(el.value)))return;
       const group=el.dataset.config?'config':'strings'; const key=el.dataset.config||el.dataset.string;
       const min=Number(el.min||0),max=Number(el.max||100000);let value=SolarLogic.clamp(el.value,min,max);
       if(['panelCount','batteryUnits','series','stringsCount','mpptCount'].includes(key)) value=Math.round(value);
       state[group][key]=value;state.preset='personalizado';refresh();
     });
-    el.addEventListener('change',()=>{const group=el.dataset.config?'config':'strings';const key=el.dataset.config||el.dataset.string;el.value=state[group][key];});
+    el.addEventListener('change',()=>{const group=el.dataset.config?'config':'strings';const key=el.dataset.config||el.dataset.string;el.value=(key==='maxMpptW' && !state[group][key])?'':state[group][key];});
   });
   $('#presets').addEventListener('click',e=>{const t=e.target.closest('[data-preset]');if(!t)return; if(state.preset!=='personalizado' || confirm('¿Cambiar el escenario y reemplazar tus datos actuales?')){state=scenario(t.dataset.preset);populate();showToast('Escenario cargado');}});
   $('#resetBtn').addEventListener('click',()=>{if(confirm('¿Restablecer el escenario de tu proyecto y reemplazar todos los cambios?')){state=scenario('proyecto');populate();showToast('Proyecto restablecido');}});
   $$('[data-toggle]').forEach(btn=>btn.addEventListener('click',()=>{const pane=$('#'+btn.dataset.toggle);const expanded=pane.classList.toggle('open');btn.setAttribute('aria-expanded',String(expanded));btn.textContent=expanded?'Ocultar parámetros ▴':'Mostrar parámetros ▾';}));
-  function downloadJson(){const data=new Blob([JSON.stringify({app:'SolarPlan Pro',version:4,exportedAt:new Date().toISOString(),...state},null,2)],{type:'application/json'});const u=URL.createObjectURL(data);const a=document.createElement('a');a.href=u;a.download='solarplan-pro-proyecto.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);showToast('Proyecto exportado como JSON');}
+  function downloadJson(){const data=new Blob([JSON.stringify({app:'SolarPlan Pro',version:2,exportedAt:new Date().toISOString(),...state},null,2)],{type:'application/json'});const u=URL.createObjectURL(data);const a=document.createElement('a');a.href=u;a.download='solarplan-pro-proyecto.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);showToast('Proyecto exportado como JSON');}
   $('#exportBtn').addEventListener('click',downloadJson);$('#exportBtn2').addEventListener('click',downloadJson);
   $('#importBtn').addEventListener('click',()=>$('#fileInput').click());
   $('#fileInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>500000)throw new Error('Archivo demasiado grande');const obj=JSON.parse(await file.text());if(!validState(obj))throw new Error('Estructura inválida');state=obj;populate();showToast('Proyecto importado correctamente');}catch(err){alert('No se pudo importar el archivo JSON: '+err.message);}e.target.value='';});
